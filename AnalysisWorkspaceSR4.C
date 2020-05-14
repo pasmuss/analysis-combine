@@ -44,9 +44,9 @@ int AnalysisWorkspaceSR4(){
 
   for (unsigned int mass = 0; mass < srmasses.size(); mass++){
     cout << "mass " << srmasses[mass] << endl;
-    TFile* f_signal_in = new TFile(("/afs/desy.de/user/a/asmusspa/Documents/CMSSW_9_2_15/src/Analysis/Tools/test/Configs_diffBTags_allmedium/rootfiles_4med_asympT_onlMC_triggersfMC_Nov12-19/mcsig/mc-sig-" + srmasses[mass]  + "-NLO-deep-SR-3j.root").c_str(),"READ");//SR (always), 3j (for now: inclusive)
-    cout << ("/afs/desy.de/user/a/asmusspa/Documents/CMSSW_9_2_15/src/Analysis/Tools/test/Configs_diffBTags_allmedium/rootfiles_4med_asympT_onlMC_triggersfMC_Nov12-19/mcsig/mc-sig-" + srmasses[mass]  + "-NLO-deep-SR-3j.root").c_str() << endl;
-    TH1F* h_signal_in = (TH1F*)f_signal_in->Get("m12_aac");
+    TFile* f_signal_in = new TFile(("/afs/desy.de/user/a/asmusspa/Documents/CMSSW_9_2_15/src/Analysis/Tools/test/Configs_diffBTags_allmedium/rootfiles_4med_asympT_onlMC_triggersfMC_Nov12-19/rootfiles_Apr30-20_properSubranges/mcsig/mc-sig-" + srmasses[mass]  + "-NLO-deep-SR-3j.root").c_str(),"READ");//SR (always), 3j (for now: inclusive)
+    cout << ("/afs/desy.de/user/a/asmusspa/Documents/CMSSW_9_2_15/src/Analysis/Tools/test/Configs_diffBTags_allmedium/rootfiles_4med_asympT_onlMC_triggersfMC_Nov12-19/rootfiles_Apr30-20_properSubranges/mcsig/mc-sig-" + srmasses[mass]  + "-NLO-deep-SR-3j.root").c_str() << endl;
+    TH1F* h_signal_in = (TH1F*)f_signal_in->Get("m12_SR4");
     h_signal_in -> SetName("h_signal_in");
     double lumisf = assignedlumisf[srmasses[mass]];
     cout << "lumi sf " << lumisf << endl;
@@ -57,8 +57,8 @@ int AnalysisWorkspaceSR4(){
     /// PART 2: GET DATA_OBS HISTS FOR CR/SR (CR FROM ANALYSIS MACRO, SR FOR NOW FROM TOYS)
     ///
     
-    TFile* f_cr_in = new TFile("/afs/desy.de/user/a/asmusspa/Documents/CMSSW_9_2_15/src/Analysis/Tools/test/Configs_diffBTags_allmedium/rootfiles_4med_asympT_onlMC_triggersfMC_Nov12-19/rereco/rereco-CDEF-deep-CR-3j.root","READ");//CR, 3j, full 2017
-    TH1F* h_cr_in = (TH1F*)f_cr_in->Get("m12_aac");
+    TFile* f_cr_in = new TFile("/afs/desy.de/user/a/asmusspa/Documents/CMSSW_9_2_15/src/Analysis/Tools/test/Configs_diffBTags_allmedium/rootfiles_4med_asympT_onlMC_triggersfMC_Nov12-19/rootfiles_Apr30-20_properSubranges/rereco/rereco-CDEF-deep-CR-3j.root","READ");//CR, 3j, full 2017
+    TH1F* h_cr_in = (TH1F*)f_cr_in->Get("m12_SR4");
     h_cr_in -> SetName("h_cr_in");
     RooDataHist RDHCR("RDHCR","CR",vars,h_cr_in);
 
@@ -82,15 +82,14 @@ int AnalysisWorkspaceSR4(){
     /// SRs 1/2: EXT ERF; SRs 3/4: LIN --> PERHAPS GO FOR OVERALL EXT ERF (P=54%, BETTER THAN INDIVIDUAL SRs)
     ///
 
-    RooRealVar offsetTF("offsetTF","offset of TF in x direction",90,85,95);
-    RooRealVar steepnessTF("steepnessTF","Steepness of rise in TF",6.9e-3,5e-3,9e-3);
-    RooRealVar slopelinTF("slopelinTF","Slope of linear part of TF",-2.1e-4,-4e-4,-0.1e-4);
-    RooArgList varsTF(mbb,offsetTF,steepnessTF,slopelinTF);
-    RooGenericPdf TF("TF","TF","TMath::Erf(steepnessTF*(mbb-offsetTF))*(1+slopelinTF*mbb)",varsTF);
+    RooRealVar offsetTF("offsetTF","offset of TF in y direction",0.17,0.01,0.5);
+    RooRealVar slopelinTF("slopelinTF","Slope of linear part of TF",-2.65e-5,-1e-4,-1e-6);
+    RooArgList varsTF(mbb,offsetTF,slopelinTF);
+    RooGenericPdf TF("TF","TF","slopelinTF*mbb+offsetTF",varsTF);
     RooRealVar signal_norm("signal_norm","Signal normalization",RDHSR.sumEntries(),0,1000000);
     
     //Output file
-    TFile *fOut = new TFile(("ws_analysis_SR1_toySR_" + srmasses[mass]  + "GeV.root").c_str(),"RECREATE");
+    TFile *fOut = new TFile(("ws_analysis_SR4_toySR_" + srmasses[mass]  + "GeV.root").c_str(),"RECREATE");
     RooWorkspace wspace("wspace","wspace");
     wspace.import(RDHCR);
     wspace.import(RDHSR);
@@ -108,7 +107,7 @@ int AnalysisWorkspaceSR4(){
     wspace.import(RDHSRToy);
 
     wspace.Write();
-    cout << ("File created: ws_analysis_SR1_toySR_" + srmasses[mass]  + "GeV.root").c_str() << endl;
+    cout << ("File created: ws_analysis_SR4_toySR_" + srmasses[mass]  + "GeV.root").c_str() << endl;
     fOut -> Close();
   }  
   return 0;

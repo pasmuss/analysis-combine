@@ -44,9 +44,9 @@ int AnalysisWorkspaceSR2(){
 
   for (unsigned int mass = 0; mass < srmasses.size(); mass++){
     cout << "mass " << srmasses[mass] << endl;
-    TFile* f_signal_in = new TFile(("/afs/desy.de/user/a/asmusspa/Documents/CMSSW_9_2_15/src/Analysis/Tools/test/Configs_diffBTags_allmedium/rootfiles_4med_asympT_onlMC_triggersfMC_Nov12-19/mcsig/mc-sig-" + srmasses[mass]  + "-NLO-deep-SR-3j.root").c_str(),"READ");//SR (always), 3j (for now: inclusive)
-    cout << ("/afs/desy.de/user/a/asmusspa/Documents/CMSSW_9_2_15/src/Analysis/Tools/test/Configs_diffBTags_allmedium/rootfiles_4med_asympT_onlMC_triggersfMC_Nov12-19/mcsig/mc-sig-" + srmasses[mass]  + "-NLO-deep-SR-3j.root").c_str() << endl;
-    TH1F* h_signal_in = (TH1F*)f_signal_in->Get("m12_aac");
+    TFile* f_signal_in = new TFile(("/afs/desy.de/user/a/asmusspa/Documents/CMSSW_9_2_15/src/Analysis/Tools/test/Configs_diffBTags_allmedium/rootfiles_4med_asympT_onlMC_triggersfMC_Nov12-19/rootfiles_Apr30-20_properSubranges/mcsig/mc-sig-" + srmasses[mass]  + "-NLO-deep-SR-3j.root").c_str(),"READ");//SR (always), 3j (for now: inclusive)
+    cout << ("/afs/desy.de/user/a/asmusspa/Documents/CMSSW_9_2_15/src/Analysis/Tools/test/Configs_diffBTags_allmedium/rootfiles_4med_asympT_onlMC_triggersfMC_Nov12-19/rootfiles_Apr30-20_properSubranges/mcsig/mc-sig-" + srmasses[mass]  + "-NLO-deep-SR-3j.root").c_str() << endl;
+    TH1F* h_signal_in = (TH1F*)f_signal_in->Get("m12_SR2");
     h_signal_in -> SetName("h_signal_in");
     double lumisf = assignedlumisf[srmasses[mass]];
     cout << "lumi sf " << lumisf << endl;
@@ -57,13 +57,14 @@ int AnalysisWorkspaceSR2(){
     /// PART 2: GET DATA_OBS HISTS FOR CR/SR (CR FROM ANALYSIS MACRO, SR FOR NOW FROM TOYS)
     ///
     
-    TFile* f_cr_in = new TFile("/afs/desy.de/user/a/asmusspa/Documents/CMSSW_9_2_15/src/Analysis/Tools/test/Configs_diffBTags_allmedium/rootfiles_4med_asympT_onlMC_triggersfMC_Nov12-19/rereco/rereco-CDEF-deep-CR-3j.root","READ");//CR, 3j, full 2017
-    TH1F* h_cr_in = (TH1F*)f_cr_in->Get("m12_aac");
+    TFile* f_cr_in = new TFile("/afs/desy.de/user/a/asmusspa/Documents/CMSSW_9_2_15/src/Analysis/Tools/test/Configs_diffBTags_allmedium/rootfiles_4med_asympT_onlMC_triggersfMC_Nov12-19/rootfiles_Apr30-20_properSubranges/rereco/rereco-CDEF-deep-CR-3j.root","READ");//CR, 3j, full 2017
+    TH1F* h_cr_in = (TH1F*)f_cr_in->Get("m12_SR2");
     h_cr_in -> SetName("h_cr_in");
     RooDataHist RDHCR("RDHCR","CR",vars,h_cr_in);
 
-    TFile* f_sr_in = new TFile("/afs/desy.de/user/a/asmusspa/Documents/CMSSW_9_2_15/src/Analysis/Tools/test/Outputdata/TF_bias/Pseudos1904.root","READ");
-    TH1F* SRHist = (TH1F*)f_sr_in->Get("SRHist");//data_obs SR
+    TFile* f_sr_in = new TFile("/afs/desy.de/user/a/asmusspa/Documents/CMSSW_9_2_15/src/Analysis/Tools/test/Outputdata/TF_bias/Pseudos_20GeVBins_1904.root","READ");
+    TH1F* SRHist = (TH1F*)f_sr_in->Get("SRHist_SR2");//data_obs SR
+    SRHist -> SetName("SRHist");
     RooDataHist RDHSR("RDHSR","SR",vars,SRHist);
     
     ///
@@ -83,15 +84,15 @@ int AnalysisWorkspaceSR2(){
     /// APPROACH APR 28: USE FULL RANGE TF AS TEST
     ///
     
-    RooRealVar offsetTF("offsetTF","offset of TF in x direction",90,85,95);
-    RooRealVar steepnessTF("steepnessTF","Steepness of rise in TF",6.9e-3,5e-3,9e-3);
-    RooRealVar slopelinTF("slopelinTF","Slope of linear part of TF",-2.1e-4,-4e-4,-0.1e-4);
+    RooRealVar offsetTF("offsetTF","offset of TF in x direction",-715.7,-1000,1000);//p1
+    RooRealVar steepnessTF("steepnessTF","Steepness of rise in TF",1.82e-4,1e-5,1e-3);//p2
+    RooRealVar slopelinTF("slopelinTF","Slope of linear part of TF",-5.6e-4,-1e-3,-1e-5);//p3
     RooArgList varsTF(mbb,offsetTF,steepnessTF,slopelinTF);
     RooGenericPdf TF("TF","TF","TMath::Erf(steepnessTF*(mbb-offsetTF))*(1+slopelinTF*mbb)",varsTF);
     RooRealVar signal_norm("signal_norm","Signal normalization",RDHSR.sumEntries(),0,1000000);
     
     //Output file
-    TFile *fOut = new TFile(("ws_analysis_SR1_toySR_" + srmasses[mass]  + "GeV.root").c_str(),"RECREATE");
+    TFile *fOut = new TFile(("ws_analysis_SR2_toySR_" + srmasses[mass]  + "GeV.root").c_str(),"RECREATE");
     RooWorkspace wspace("wspace","wspace");
     wspace.import(RDHCR);
     wspace.import(RDHSR);
@@ -109,7 +110,7 @@ int AnalysisWorkspaceSR2(){
     wspace.import(RDHSRToy);
 
     wspace.Write();
-    cout << ("File created: ws_analysis_SR1_toySR_" + srmasses[mass]  + "GeV.root").c_str() << endl;
+    cout << ("File created: ws_analysis_SR2_toySR_" + srmasses[mass]  + "GeV.root").c_str() << endl;
     fOut -> Close();
   }  
   return 0;
