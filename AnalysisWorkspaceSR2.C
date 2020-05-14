@@ -84,13 +84,13 @@ int AnalysisWorkspaceSR2(){
     /// APPROACH APR 28: USE FULL RANGE TF AS TEST
     ///
     
-    RooRealVar offsetTF("offsetTF","offset of TF in x direction",-715.7,-1000,1000);//p1
-    RooRealVar steepnessTF("steepnessTF","Steepness of rise in TF",1.82e-4,1e-5,1e-3);//p2
-    RooRealVar slopelinTF("slopelinTF","Slope of linear part of TF",-5.6e-4,-1e-3,-1e-5);//p3
-    RooArgList varsTF(mbb,offsetTF,steepnessTF,slopelinTF);
-    RooGenericPdf TF("TF","TF","TMath::Erf(steepnessTF*(mbb-offsetTF))*(1+slopelinTF*mbb)",varsTF);
+    RooRealVar offsetTF("offsetTF","offset of TF in y direction",0.1458,0.1,0.3);//p1
+    //RooRealVar steepnessTF("steepnessTF","Steepness of rise in TF",1.82e-4,1e-5,1e-3);//p2
+    //RooRealVar slopelinTF("slopelinTF","Slope of linear part of TF",-5.6e-4,-1e-3,-1e-5);//p3
+    RooArgList varsTF(mbb,offsetTF);
+    RooGenericPdf TF("TF","TF","offsetTF",varsTF);
     RooRealVar signal_norm("signal_norm","Signal normalization",RDHSR.sumEntries(),0,1000000);
-    
+
     //Output file
     TFile *fOut = new TFile(("ws_analysis_SR2_toySR_" + srmasses[mass]  + "GeV.root").c_str(),"RECREATE");
     RooWorkspace wspace("wspace","wspace");
