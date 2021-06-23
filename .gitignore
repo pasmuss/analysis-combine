@@ -7,3 +7,5 @@ SR*/
 */*root
 test/
 *out
+bias/noOptions/newSignal*
+*txt*
